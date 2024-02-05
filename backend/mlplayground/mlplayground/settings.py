@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     "dqmio_file_indexer.apps.DqmioDataIndexerConfig",
     "dqmio_etl.apps.DqmioEtlConfig",
     "dqmio_celery_tasks.apps.DqmioCeleryTasksConfig",
+    "react_frontend.apps.ReactFrontendConfig"
 ]
 
 # Django Rest Framework (DRF) configuration
@@ -180,7 +181,7 @@ LOGGING = {
 }
 
 # Static files (CSS, JavaScript, Images)
-STATIC_URL = "static/"
+STATIC_URL = "django_static/"
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
@@ -199,3 +200,6 @@ CELERY_BEAT_SCHEDULE = {
 
 # Path used in dqmio_file_indexer app to discover DQMIO files
 DIR_PATH_DQMIO_STORAGE = os.getenv("DIR_PATH_DQMIO_STORAGE")
+
+# Path used to read react build artifacts and serve from django
+REACT_APP_BUILD_PATH = os.getenv("REACT_APP_BUILD_PATH")
