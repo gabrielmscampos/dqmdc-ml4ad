@@ -8,7 +8,7 @@ kc = Keycloak(
     server_url=settings.KEYCLOAK_SERVER_URL,
     client_id=settings.KEYCLOAK_CONFIDENTIAL_CLIENT_ID,
     client_secret_key=settings.KEYCLOAK_SECRET_KEY,
-    realm_name=settings.KEYCLOAK_REALM
+    realm_name=settings.KEYCLOAK_REALM,
 )
 
 

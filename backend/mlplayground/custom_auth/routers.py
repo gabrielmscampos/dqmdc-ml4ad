@@ -1,6 +1,6 @@
 from rest_framework import routers
 
-from .viewsets import KeycloakExchangeViewSet, KeycloakApiTokenViewSet
+from .viewsets import KeycloakApiTokenViewSet, KeycloakExchangeViewSet
 
 router = routers.SimpleRouter()
 router.register(r"exchange-token", KeycloakExchangeViewSet, basename="exchange-token")

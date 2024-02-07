@@ -1,12 +1,12 @@
 import logging
 
+from custom_auth.keycloak import KeycloakAuthentication
 from django_filters.rest_framework import DjangoFilterBackend
 from dqmio_celery_tasks.serializers import TaskResponseBase, TaskResponseSerializer
 from drf_spectacular.utils import extend_schema
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from custom_auth.keycloak import KeycloakAuthentication
 
 from .filters import FileIndexFilter
 from .models import FileIndex

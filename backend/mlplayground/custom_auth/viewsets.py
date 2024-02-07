@@ -2,10 +2,10 @@ import logging
 
 from django.conf import settings
 from django.http import HttpResponseBadRequest, HttpResponseServerError
-from rest_framework.viewsets import ViewSet
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework.response import Response
-from utils.keycloak import Keycloak, InvalidToken
-from drf_spectacular.utils import extend_schema, OpenApiParameter
+from rest_framework.viewsets import ViewSet
+from utils.keycloak import InvalidToken, Keycloak
 
 from .keycloak import KeycloakApiTokenAuthentication
 from .serializers import ExchangeTokenInputSerializer, ExchangeTokenResponseSerializer, IssueApiTokenResponseSerializer
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 kc = Keycloak(
     server_url=settings.KEYCLOAK_SERVER_URL,
     client_id=settings.KEYCLOAK_PUBLIC_CLIENT_ID,
-    realm_name=settings.KEYCLOAK_REALM
+    realm_name=settings.KEYCLOAK_REALM,
 )
 
 
@@ -23,6 +23,7 @@ class KeycloakExchangeViewSet(ViewSet):
     """
     View for dealing with keycloak tokens
     """
+
     serializer_class = ExchangeTokenInputSerializer
 
     @extend_schema(responses={200: ExchangeTokenResponseSerializer})
@@ -57,18 +58,13 @@ class KeycloakApiTokenViewSet(ViewSet):
     """
     View for issuing api tokens
     """
+
     authentication_classes = [KeycloakApiTokenAuthentication]
 
     @extend_schema(
         request=None,
         responses={200: IssueApiTokenResponseSerializer},
-        parameters=[
-            OpenApiParameter(
-                name="X-API-KEY",
-                type=str,
-                location=OpenApiParameter.HEADER
-            )
-        ]
+        parameters=[OpenApiParameter(name="X-API-KEY", type=str, location=OpenApiParameter.HEADER)],
     )
     def create(self, request):
         """

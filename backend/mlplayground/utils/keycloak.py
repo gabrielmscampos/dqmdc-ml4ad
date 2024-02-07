@@ -1,10 +1,10 @@
-from keycloak import KeycloakOpenID
-from jose import jwt
 import requests
+from jose import jwt
+from keycloak import KeycloakOpenID
 
 
 class InvalidToken(Exception):
-    ...
+    pass
 
 
 class Keycloak:
@@ -46,10 +46,10 @@ class Keycloak:
         response = requests.post(
             f"{self.server_url}realms/{self.realm_name}/api-access/token",
             data={
-                'grant_type': 'client_credentials',
-                'client_id': self.client_id,
-                'client_secret': self.client_secret_key,
-                'audience': self.client_id,
-            }
+                "grant_type": "client_credentials",
+                "client_id": self.client_id,
+                "client_secret": self.client_secret_key,
+                "audience": self.client_id,
+            },
         )
         return response.json()

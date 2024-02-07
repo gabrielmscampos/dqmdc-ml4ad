@@ -71,7 +71,7 @@ INSTALLED_APPS = [
     "dqmio_file_indexer.apps.DqmioDataIndexerConfig",
     "dqmio_etl.apps.DqmioEtlConfig",
     "dqmio_celery_tasks.apps.DqmioCeleryTasksConfig",
-    "custom_auth.apps.CustomAuthConfig"
+    "custom_auth.apps.CustomAuthConfig",
 ]
 
 # Django Rest Framework (DRF) configuration

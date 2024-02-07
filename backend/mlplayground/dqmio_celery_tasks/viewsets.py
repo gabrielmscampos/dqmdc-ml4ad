@@ -1,12 +1,12 @@
 import logging
 
+from custom_auth.keycloak import KeycloakAuthentication
 from django_celery_results.models import TaskResult
 from drf_spectacular.utils import extend_schema
 from mlplayground import celery_app
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from custom_auth.keycloak import KeycloakAuthentication
 
 from .serializers import CeleryTasksSerializer, InspectResponseBase, InspectResponseSerializer
 
