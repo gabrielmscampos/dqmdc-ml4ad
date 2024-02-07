@@ -1,7 +1,8 @@
 import axios from 'axios'
+import { User } from 'oidc-client-ts'
 
 import { toUndefined } from '../../utils/sanitizer'
-import { API_URL } from '../../config/env'
+import { API_URL, OIDC_AUTHORITY, OIDC_CLIENT_ID } from '../../config/env'
 
 const FILE_INDEX_STATUSES = [
   'INDEXED',
@@ -10,6 +11,16 @@ const FILE_INDEX_STATUSES = [
   'PROCESSED',
   'FAILED'
 ]
+
+const getAccessToken = () => {
+  const oidcStorage = localStorage.getItem(`oidc.user:${OIDC_AUTHORITY}:${OIDC_CLIENT_ID}`)
+  if (!oidcStorage) {
+    return null
+  }
+  const user = User.fromStorageString(oidcStorage)
+
+  return user?.access_token
+}
 
 const listFileIndex = async ({ page, era, minSize, pathContains, status }) => {
   const endpoint = `${API_URL}/file-index/`
@@ -22,7 +33,8 @@ const listFileIndex = async ({ page, era, minSize, pathContains, status }) => {
       path_contains: toUndefined(pathContains, '')
     },
     headers: {
-      Accept: 'application/json'
+      Accept: 'application/json',
+      Authorization: `Bearer ${getAccessToken()}`
     }
   })
   return response.data
@@ -32,7 +44,8 @@ const getRun = async ({ run }) => {
   const endpoint = `${API_URL}/run/${run}/`
   const response = await axios.get(endpoint, {
     headers: {
-      Accept: 'application/json'
+      Accept: 'application/json',
+      Authorization: `Bearer ${getAccessToken()}`
     }
   })
   return response.data
@@ -47,7 +60,8 @@ const listRuns = async ({ page, maxRun, minRun }) => {
       min_run_number: toUndefined(minRun, '')
     },
     headers: {
-      Accept: 'application/json'
+      Accept: 'application/json',
+      Authorization: `Bearer ${getAccessToken()}`
     }
   })
   return response.data
@@ -60,7 +74,8 @@ const listLumisectionsInRun = async ({ page, runNumber }) => {
       page
     },
     headers: {
-      Accept: 'application/json'
+      Accept: 'application/json',
+      Authorization: `Bearer ${getAccessToken()}`
     }
   })
   return response.data
@@ -70,7 +85,8 @@ const getLumisection = async ({ id }) => {
   const endpoint = `${API_URL}/lumisection/${id}/`
   const response = await axios.get(endpoint, {
     headers: {
-      Accept: 'application/json'
+      Accept: 'application/json',
+      Authorization: `Bearer ${getAccessToken()}`
     }
   })
   return response.data
@@ -89,7 +105,8 @@ const listLumisections = async ({ page, run, ls, maxLs, minLs, maxRun, minRun })
       min_run_number: toUndefined(minRun, '')
     },
     headers: {
-      Accept: 'application/json'
+      Accept: 'application/json',
+      Authorization: `Bearer ${getAccessToken()}`
     }
   })
   return response.data
@@ -112,7 +129,8 @@ const listHistograms = async (dim, { page, run, ls, lsId, title, maxLs, minLs, m
       title_contains: toUndefined(titleContains, '')
     },
     headers: {
-      Accept: 'application/json'
+      Accept: 'application/json',
+      Authorization: `Bearer ${getAccessToken()}`
     }
   })
   return response.data
@@ -122,7 +140,8 @@ const getHistogram = async (dim, id) => {
   const endpoint = `${API_URL}/lumisection-h${dim}d/${id}/`
   const response = await axios.get(endpoint, {
     headers: {
-      Accept: 'application/json'
+      Accept: 'application/json',
+      Authorization: `Bearer ${getAccessToken()}`
     }
   })
   return response.data
@@ -132,7 +151,8 @@ const getIngestedSubsystems = async (dim) => {
   const endpoint = `${API_URL}/lumisection-h${dim}d/count-by-subsystem/`
   const response = await axios.get(endpoint, {
     headers: {
-      Accept: 'application/json'
+      Accept: 'application/json',
+      Authorization: `Bearer ${getAccessToken()}`
     }
   })
   return response.data
@@ -145,7 +165,8 @@ const listTrackeTasks = async ({ page }) => {
       page
     },
     headers: {
-      Accept: 'application/json'
+      Accept: 'application/json',
+      Authorization: `Bearer ${getAccessToken()}`
     }
   })
   return response.data
@@ -155,7 +176,8 @@ const listEnqueuedTasks = async () => {
   const endpoint = `${API_URL}/celery-tasks/queued/`
   const response = await axios.get(endpoint, {
     headers: {
-      Accept: 'application/json'
+      Accept: 'application/json',
+      Authorization: `Bearer ${getAccessToken()}`
     }
   })
   return response.data
