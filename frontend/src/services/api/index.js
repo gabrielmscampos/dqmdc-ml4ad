@@ -12,29 +12,43 @@ const FILE_INDEX_STATUSES = [
   'FAILED'
 ]
 
-const getAccessToken = () => {
-  const oidcStorage = localStorage.getItem(`oidc.user:${OIDC_AUTHORITY}:${OIDC_CLIENT_ID}`)
-  if (!oidcStorage) {
-    return null
-  }
-  const user = User.fromStorageString(oidcStorage)
+const axiosApiInstance = axios.create()
 
-  return user?.access_token
+axiosApiInstance.interceptors.request.use(
+  async config => {
+    const oidcStorage = localStorage.getItem(`oidc.user.api:${OIDC_AUTHORITY}:${OIDC_CLIENT_ID}`)
+    if (!oidcStorage) {
+      return null
+    }
+    const user = User.fromStorageString(oidcStorage)
+
+    config.headers = {
+      Authorization: `${user.token_type} ${user.access_token}`,
+      Accept: 'application/json'
+    }
+    return config
+  },
+  error => {
+    Promise.reject(error)
+  })
+
+const exchangeToken = async ({ subjectToken }) => {
+  const endpoint = `${API_URL}/exchange-token/`
+  const response = await axiosApiInstance.post(endpoint, {
+    subject_token: subjectToken
+  })
+  return response.data
 }
 
 const listFileIndex = async ({ page, era, minSize, pathContains, status }) => {
   const endpoint = `${API_URL}/file-index/`
-  const response = await axios.get(endpoint, {
+  const response = await axiosApiInstance.get(endpoint, {
     params: {
       page,
       era: toUndefined(era, ''),
       status: toUndefined(status, ''),
       min_size: !isNaN(minSize) ? parseInt(minSize) * (1024 ** 2) : undefined, // Transforming from MB (user input) to B
       path_contains: toUndefined(pathContains, '')
-    },
-    headers: {
-      Accept: 'application/json',
-      Authorization: `Bearer ${getAccessToken()}`
     }
   })
   return response.data
@@ -42,26 +56,17 @@ const listFileIndex = async ({ page, era, minSize, pathContains, status }) => {
 
 const getRun = async ({ run }) => {
   const endpoint = `${API_URL}/run/${run}/`
-  const response = await axios.get(endpoint, {
-    headers: {
-      Accept: 'application/json',
-      Authorization: `Bearer ${getAccessToken()}`
-    }
-  })
+  const response = await axiosApiInstance.get(endpoint)
   return response.data
 }
 
 const listRuns = async ({ page, maxRun, minRun }) => {
   const endpoint = `${API_URL}/run/`
-  const response = await axios.get(endpoint, {
+  const response = await axiosApiInstance.get(endpoint, {
     params: {
       page,
       max_run_number: toUndefined(maxRun, ''),
       min_run_number: toUndefined(minRun, '')
-    },
-    headers: {
-      Accept: 'application/json',
-      Authorization: `Bearer ${getAccessToken()}`
     }
   })
   return response.data
@@ -69,13 +74,9 @@ const listRuns = async ({ page, maxRun, minRun }) => {
 
 const listLumisectionsInRun = async ({ page, runNumber }) => {
   const endpoint = `${API_URL}/run/${runNumber}/lumisections/`
-  const response = await axios.get(endpoint, {
+  const response = await axiosApiInstance.get(endpoint, {
     params: {
       page
-    },
-    headers: {
-      Accept: 'application/json',
-      Authorization: `Bearer ${getAccessToken()}`
     }
   })
   return response.data
@@ -83,18 +84,13 @@ const listLumisectionsInRun = async ({ page, runNumber }) => {
 
 const getLumisection = async ({ id }) => {
   const endpoint = `${API_URL}/lumisection/${id}/`
-  const response = await axios.get(endpoint, {
-    headers: {
-      Accept: 'application/json',
-      Authorization: `Bearer ${getAccessToken()}`
-    }
-  })
+  const response = await axiosApiInstance.get(endpoint)
   return response.data
 }
 
 const listLumisections = async ({ page, run, ls, maxLs, minLs, maxRun, minRun }) => {
   const endpoint = `${API_URL}/lumisection/`
-  const response = await axios.get(endpoint, {
+  const response = await axiosApiInstance.get(endpoint, {
     params: {
       page,
       run_number: toUndefined(run, ''),
@@ -103,10 +99,6 @@ const listLumisections = async ({ page, run, ls, maxLs, minLs, maxRun, minRun })
       max_run_number: toUndefined(maxRun, ''),
       min_ls_number: toUndefined(minLs, ''),
       min_run_number: toUndefined(minRun, '')
-    },
-    headers: {
-      Accept: 'application/json',
-      Authorization: `Bearer ${getAccessToken()}`
     }
   })
   return response.data
@@ -114,7 +106,7 @@ const listLumisections = async ({ page, run, ls, maxLs, minLs, maxRun, minRun })
 
 const listHistograms = async (dim, { page, run, ls, lsId, title, maxLs, minLs, maxRun, minRun, minEntries, titleContains }) => {
   const endpoint = `${API_URL}/lumisection-h${dim}d/`
-  const response = await axios.get(endpoint, {
+  const response = await axiosApiInstance.get(endpoint, {
     params: {
       page,
       run_number: toUndefined(run, ''),
@@ -127,10 +119,6 @@ const listHistograms = async (dim, { page, run, ls, lsId, title, maxLs, minLs, m
       min_run_number: toUndefined(minRun, ''),
       min_entries: toUndefined(minEntries, ''),
       title_contains: toUndefined(titleContains, '')
-    },
-    headers: {
-      Accept: 'application/json',
-      Authorization: `Bearer ${getAccessToken()}`
     }
   })
   return response.data
@@ -138,35 +126,21 @@ const listHistograms = async (dim, { page, run, ls, lsId, title, maxLs, minLs, m
 
 const getHistogram = async (dim, id) => {
   const endpoint = `${API_URL}/lumisection-h${dim}d/${id}/`
-  const response = await axios.get(endpoint, {
-    headers: {
-      Accept: 'application/json',
-      Authorization: `Bearer ${getAccessToken()}`
-    }
-  })
+  const response = await axiosApiInstance.get(endpoint)
   return response.data
 }
 
 const getIngestedSubsystems = async (dim) => {
   const endpoint = `${API_URL}/lumisection-h${dim}d/count-by-subsystem/`
-  const response = await axios.get(endpoint, {
-    headers: {
-      Accept: 'application/json',
-      Authorization: `Bearer ${getAccessToken()}`
-    }
-  })
+  const response = await axiosApiInstance.get(endpoint)
   return response.data
 }
 
 const listTrackeTasks = async ({ page }) => {
   const endpoint = `${API_URL}/celery-tasks/`
-  const response = await axios.get(endpoint, {
+  const response = await axiosApiInstance.get(endpoint, {
     params: {
       page
-    },
-    headers: {
-      Accept: 'application/json',
-      Authorization: `Bearer ${getAccessToken()}`
     }
   })
   return response.data
@@ -174,16 +148,14 @@ const listTrackeTasks = async ({ page }) => {
 
 const listEnqueuedTasks = async () => {
   const endpoint = `${API_URL}/celery-tasks/queued/`
-  const response = await axios.get(endpoint, {
-    headers: {
-      Accept: 'application/json',
-      Authorization: `Bearer ${getAccessToken()}`
-    }
-  })
+  const response = await axiosApiInstance.get(endpoint)
   return response.data
 }
 
 const API = {
+  auth: {
+    exchange: exchangeToken
+  },
   fileIndex: {
     statusList: FILE_INDEX_STATUSES,
     list: listFileIndex

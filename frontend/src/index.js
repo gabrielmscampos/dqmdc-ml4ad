@@ -12,6 +12,7 @@ import { WebStorageStateStore } from 'oidc-client-ts'
 
 import Root from './root'
 import { OIDC_AUTHORITY, OIDC_CLIENT_ID, OIDC_SCOPE } from './config/env'
+import API from './services/api'
 
 // Note on "redirect_uri"
 // Why we are using the `redirect_uri` as {window.location.origin + '/'} ?
@@ -25,12 +26,14 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       client_id={OIDC_CLIENT_ID}
       scope={OIDC_SCOPE}
       redirect_uri={window.location.origin + '/'} // Note on that above
-      onSigninCallback={(_user) => {
+      onSigninCallback={async (_user) => {
         window.history.replaceState(
           {},
           document.title,
           window.location.pathname
         )
+        const apiToken = await API.auth.exchange({ subjectToken: _user.access_token })
+        localStorage.setItem(`oidc.user.api:${OIDC_AUTHORITY}:${OIDC_CLIENT_ID}`, JSON.stringify(apiToken))
       }}
       userStore={new WebStorageStateStore({ store: window.localStorage })}
     >
