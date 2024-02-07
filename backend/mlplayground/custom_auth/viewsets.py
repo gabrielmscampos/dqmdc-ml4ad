@@ -2,7 +2,7 @@ import logging
 
 from django.conf import settings
 from django.http import HttpResponseBadRequest, HttpResponseServerError
-from drf_spectacular.utils import OpenApiParameter, extend_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 from utils.keycloak import InvalidToken, Keycloak
@@ -64,7 +64,6 @@ class KeycloakApiTokenViewSet(ViewSet):
     @extend_schema(
         request=None,
         responses={200: IssueApiTokenResponseSerializer},
-        parameters=[OpenApiParameter(name="X-API-KEY", type=str, location=OpenApiParameter.HEADER)],
     )
     def create(self, request):
         """
