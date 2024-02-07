@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     "dqmio_file_indexer.apps.DqmioDataIndexerConfig",
     "dqmio_etl.apps.DqmioEtlConfig",
     "dqmio_celery_tasks.apps.DqmioCeleryTasksConfig",
+    "custom_auth.apps.CustomAuthConfig"
 ]
 
 # Django Rest Framework (DRF) configuration
@@ -199,3 +200,10 @@ CELERY_BEAT_SCHEDULE = {
 
 # Path used in dqmio_file_indexer app to discover DQMIO files
 DIR_PATH_DQMIO_STORAGE = os.getenv("DIR_PATH_DQMIO_STORAGE")
+
+# Keycloak OIDC config
+KEYCLOAK_SERVER_URL = os.getenv("KEYCLOAK_SERVER_URL")
+KEYCLOAK_CONFIDENTIAL_CLIENT_ID = os.getenv("KEYCLOAK_CONFIDENTIAL_CLIENT_ID")
+KEYCLOAK_SECRET_KEY = os.getenv("KEYCLOAK_SECRET_KEY")
+KEYCLOAK_REALM = os.getenv("KEYCLOAK_REALM")
+KEYCLOAK_PUBLIC_CLIENT_ID = os.getenv("KEYCLOAK_PUBLIC_CLIENT_ID")
