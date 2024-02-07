@@ -6,6 +6,7 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from custom_auth.keycloak import KeycloakAuthentication
 
 from .filters import FileIndexFilter
 from .models import FileIndex
@@ -20,6 +21,7 @@ class FileIndexViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, viewset
     serializer_class = FileIndexSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = FileIndexFilter
+    authentication_classes = [KeycloakAuthentication]
 
     @extend_schema(request=None, responses={200: TaskResponseSerializer})
     @action(

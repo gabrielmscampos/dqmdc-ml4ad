@@ -6,6 +6,7 @@ from mlplayground import celery_app
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from custom_auth.keycloak import KeycloakAuthentication
 
 from .serializers import CeleryTasksSerializer, InspectResponseBase, InspectResponseSerializer
 
@@ -21,6 +22,7 @@ class CeleryTasksViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, views
     queryset = TaskResult.objects.all().order_by("-date_done")
     serializer_class = CeleryTasksSerializer
     lookup_field = "task_id"
+    authentication_classes = [KeycloakAuthentication]
 
     @extend_schema(
         request=None,
