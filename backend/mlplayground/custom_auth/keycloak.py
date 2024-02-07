@@ -36,9 +36,20 @@ class KeycloakAuthentication(BaseAuthentication):
 
         try:
             kc.validate_audience(token)
-            kc.validate_authorized_party(token, settings.KEYCLOAK_PUBLIC_CLIENT_ID)
-            kc.decode_token(token)
-            user_info = kc.user_info(token)
+            kc.validate_authorized_party(
+                token, [settings.KEYCLOAK_CONFIDENTIAL_CLIENT_ID, settings.KEYCLOAK_PUBLIC_CLIENT_ID]
+            )
+            claims = kc.decode_token(token)
+
+            # Api access token fails to retrieve user_info (since the token is not linked to a real user)
+            # Since this authorization class checks for:
+            # 1. user tokens from confidential client (pure or exchanged from public client)
+            # 2. api access token
+            # We can't always retrieve the user_info (only when dealing with user tokens)
+            if claims["sub"] == f"service-account-{settings.KEYCLOAK_CONFIDENTIAL_CLIENT_ID}":
+                user_info = {"name": claims["sub"], "reason": "api access token"}
+            else:
+                user_info = kc.user_info(token)
         except Exception:
             raise AuthenticationFailed()
 

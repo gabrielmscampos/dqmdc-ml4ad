@@ -24,9 +24,9 @@ class Keycloak:
         if claims.get("aud") != self.client_id:
             raise InvalidToken
 
-    def validate_authorized_party(self, token, client_id):
+    def validate_authorized_party(self, token, client_id_list):
         claims = jwt.get_unverified_claims(token)
-        if claims.get("azp") != client_id:
+        if claims.get("azp") not in client_id_list:
             raise InvalidToken
 
     def decode_token(self, token):
