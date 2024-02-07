@@ -5,9 +5,10 @@ from django.http import HttpResponseBadRequest, HttpResponseServerError
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from utils.keycloak import Keycloak, InvalidToken
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 
-from .serializers import ExchangeTokenInputSerializer, ExchangeTokenResponseSerializer
+from .keycloak import KeycloakApiTokenAuthentication
+from .serializers import ExchangeTokenInputSerializer, ExchangeTokenResponseSerializer, IssueApiTokenResponseSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -48,8 +49,31 @@ class KeycloakExchangeViewSet(ViewSet):
         except Exception:
             return HttpResponseServerError("Failed to exchange token.")
 
-        # Renaming because is difficult to set an attribute name with hyphen
-        # in serializer class and match with drf-spectacular
-        target_token["not_before_policy"] = target_token.pop("not-before-policy")
+        payload = ExchangeTokenResponseSerializer(target_token).data
+        return Response(payload)
 
-        return Response(ExchangeTokenResponseSerializer(target_token).data)
+
+class KeycloakApiTokenViewSet(ViewSet):
+    """
+    View for issuing api tokens
+    """
+    authentication_classes = [KeycloakApiTokenAuthentication]
+
+    @extend_schema(
+        request=None,
+        responses={200: IssueApiTokenResponseSerializer},
+        parameters=[
+            OpenApiParameter(
+                name="X-API-KEY",
+                type=str,
+                location=OpenApiParameter.HEADER
+            )
+        ]
+    )
+    def create(self, request):
+        """
+        Exchange app client token to api client token
+        """
+        target_token = request.user.token
+        payload = IssueApiTokenResponseSerializer(target_token).data
+        return Response(payload)

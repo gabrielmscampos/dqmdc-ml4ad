@@ -54,3 +54,42 @@ class KeycloakAuthentication(BaseAuthentication):
         except AttributeError:
             raise AuthenticationFailed()
 
+
+class KeycloakApiUser(AnonymousUser):
+    """
+    Django Rest Framework needs an user to consider authenticated
+    """
+
+    def __init__(self, token):
+        super().__init__()
+        self.token = token
+
+    @property
+    def is_authenticated(self):
+        return True
+
+
+class KeycloakApiTokenAuthentication(BaseAuthentication):
+    """
+    Custom authentication class based on Keycloak
+    """
+
+    def authenticate(self, request):
+        api_key = self.__get_api_key(request)
+
+        if api_key != settings.KEYCLOAK_SECRET_KEY:
+            raise AuthenticationFailed()
+
+        try:
+            token = kc.issue_api_token()
+        except Exception:
+            raise AuthenticationFailed()
+
+        return (KeycloakApiUser(token=token), None)
+
+    @staticmethod
+    def __get_api_key(request):
+        token = request.headers.get("X-API-KEY")
+        if not token:
+            raise AuthenticationFailed()
+        return token

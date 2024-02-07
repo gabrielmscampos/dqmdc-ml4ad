@@ -1,5 +1,6 @@
 from keycloak import KeycloakOpenID
 from jose import jwt
+import requests
 
 
 class InvalidToken(Exception):
@@ -8,7 +9,10 @@ class InvalidToken(Exception):
 
 class Keycloak:
     def __init__(self, **kwargs):
-        self.client_id = kwargs['client_id']
+        self.server_url = kwargs["server_url"]
+        self.realm_name = kwargs["realm_name"]
+        self.client_id = kwargs["client_id"]
+        self.client_secret_key = kwargs.get("client_secret_key")
         self._kc = KeycloakOpenID(**kwargs)
         self.public_key = self.__build_public_key()
 
@@ -37,3 +41,15 @@ class Keycloak:
 
     def user_info(self, token):
         return self._kc.userinfo(token)
+
+    def issue_api_token(self):
+        response = requests.post(
+            f"{self.server_url}realms/{self.realm_name}/api-access/token",
+            data={
+                'grant_type': 'client_credentials',
+                'client_id': self.client_id,
+                'client_secret': self.client_secret_key,
+                'audience': self.client_id,
+            }
+        )
+        return response.json()

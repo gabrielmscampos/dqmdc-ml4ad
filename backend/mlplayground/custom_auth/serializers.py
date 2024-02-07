@@ -12,6 +12,11 @@ class ExchangeTokenResponseSerializer(serializers.Serializer):
     refresh_token = serializers.CharField()
     token_type = serializers.CharField()
     id_token = serializers.CharField()
-    not_before_policy = serializers.IntegerField()
     session_state = serializers.CharField()
     scope = serializers.CharField()
+
+
+class IssueApiTokenResponseSerializer(serializers.Serializer):
+    access_token = serializers.CharField()
+    expires_in = serializers.IntegerField()
+    token_type = serializers.CharField()
