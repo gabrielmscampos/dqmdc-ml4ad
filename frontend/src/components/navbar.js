@@ -10,6 +10,7 @@ import Button from 'react-bootstrap/Button'
 import Modal from 'react-bootstrap/Modal'
 
 import logo from '../assets/img/logo.png'
+import { OIDC_CONFIDENTIAL_TOKEN_NS } from '../config/env'
 
 const Navbar = () => {
   const auth = useAuth()
@@ -18,6 +19,7 @@ const Navbar = () => {
 
   const handleLogout = () => {
     auth.removeUser()
+    localStorage.removeItem(OIDC_CONFIDENTIAL_TOKEN_NS)
     setShowLogoutModal(false)
     window.location.reload() // This is done just to enhance UX, you could just logout using "auth.removeUser()"
   }
