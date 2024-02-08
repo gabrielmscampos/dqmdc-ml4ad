@@ -5,7 +5,7 @@ from django.http import HttpResponseBadRequest, HttpResponseServerError
 from drf_spectacular.utils import extend_schema
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
-from utils.keycloak import InvalidToken, Keycloak
+from utils.cern_keycloak import InvalidToken, Keycloak
 
 from .keycloak import KeycloakApiTokenAuthentication
 from .serializers import ExchangeTokenInputSerializer, ExchangeTokenResponseSerializer, IssueApiTokenResponseSerializer

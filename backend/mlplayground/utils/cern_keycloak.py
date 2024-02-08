@@ -12,7 +12,7 @@ class InvalidClient(Exception):
 
 
 class Keycloak:
-    def __init__(self, skip_pk=True, **kwargs):
+    def __init__(self, skip_pk=False, **kwargs):
         self.server_url = kwargs["server_url"]
         self.realm_name = kwargs["realm_name"]
         self.client_id = kwargs["client_id"]
@@ -20,7 +20,7 @@ class Keycloak:
         self._kc = KeycloakOpenID(**kwargs)
         self.skip_pk = skip_pk
 
-        if self.skip_pk is True:
+        if self.skip_pk is False:
             self.public_key = self.__build_public_key()
 
     def __build_public_key(self):
