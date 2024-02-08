@@ -10,9 +10,9 @@ import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from 'react-oidc-context'
 import { WebStorageStateStore } from 'oidc-client-ts'
 
-import Root from './root'
-import { OIDC_AUTHORITY, OIDC_PUBLIC_CLIENT_ID, OIDC_SCOPE } from './config/env'
+import { OIDC_AUTHORITY, OIDC_PUBLIC_CLIENT_ID, OIDC_SCOPE, OIDC_CONFIDENTIAL_TOKEN_NS } from './config/env'
 import API from './services/api'
+import Root from './root'
 
 // Note on "redirect_uri"
 // Why we are using the `redirect_uri` as {window.location.origin + '/'} ?
@@ -33,7 +33,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           window.location.pathname
         )
         const apiToken = await API.auth.exchange({ subjectToken: _user.access_token })
-        localStorage.setItem(`oidc.user.confidential:${OIDC_AUTHORITY}:${OIDC_PUBLIC_CLIENT_ID}`, JSON.stringify(apiToken))
+        localStorage.setItem(OIDC_CONFIDENTIAL_TOKEN_NS, JSON.stringify(apiToken))
+        window.dispatchEvent(new Event('confidential-token-stored'))
       }}
       userStore={new WebStorageStateStore({ store: window.localStorage })}
     >

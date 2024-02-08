@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 import { toUndefined } from '../../utils/sanitizer'
-import { getUserToken } from '../../utils/userTokens'
+import { getPublicToken, getConfidentialToken } from '../../utils/userTokens'
 import { API_URL } from '../../config/env'
 
 const FILE_INDEX_STATUSES = [
@@ -16,7 +16,7 @@ const axiosApiInstance = axios.create()
 
 axiosApiInstance.interceptors.request.use(
   async config => {
-    const oidc = getUserToken({ type: 'confidential' })
+    const oidc = getConfidentialToken()
     config.headers = {
       Authorization: `${oidc.tokenType} ${oidc.accessToken}`,
       Accept: 'application/json'
@@ -28,7 +28,7 @@ axiosApiInstance.interceptors.request.use(
   })
 
 const exchangeToken = async ({ subjectToken }) => {
-  const oidc = getUserToken({ type: 'public' })
+  const oidc = getPublicToken()
   const endpoint = `${API_URL}/exchange-token/`
   const response = await axios.post(endpoint, {
     subject_token: subjectToken

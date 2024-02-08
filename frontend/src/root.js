@@ -1,9 +1,14 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
+
 import { Routes, Route } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
+import { useAuth } from 'react-oidc-context'
 
+import { OIDC_CONFIDENTIAL_TOKEN_NS } from './config/env'
+import { getConfidentialToken } from './utils/userTokens'
 import { Navbar, PrivateRoute } from './components'
 import Views from './views'
+import API from './services/api'
 
 // Note on `PrivateRoute`
 //
@@ -16,6 +21,32 @@ import Views from './views'
 // <PrivateRoute roles={['viz-role']} component={Views.DataExplorer.Histograms2D} />
 
 const Root = () => {
+  const auth = useAuth()
+  const [tokenExchanged, setTokenExchanged] = useState(false)
+
+  window.addEventListener('confidential-token-stored', () => {
+    setTokenExchanged(true)
+  })
+
+  useEffect(() => {
+    if (auth.isAuthenticated && tokenExchanged) {
+      const confidentialToken = getConfidentialToken()
+      const renewInterval = confidentialToken.expiresIn - (confidentialToken.expiresIn * 0.1)
+      const handle = setInterval(() => {
+        auth.signinSilent()
+          .then(async (_user) => {
+            const apiToken = await API.auth.exchange({ subjectToken: _user.access_token })
+            localStorage.setItem(OIDC_CONFIDENTIAL_TOKEN_NS, JSON.stringify(apiToken))
+          })
+          .catch(err => {
+            console.error(err)
+          })
+      }, renewInterval * 1000)
+
+      return () => clearInterval(handle)
+    }
+  }, [auth, tokenExchanged])
+
   return (
     <>
       <Navbar />
@@ -24,20 +55,20 @@ const Root = () => {
         <Route path='/ingest' element={<PrivateRoute component={Views.DataIngestion.Index} />} />
         <Route path='/file-index' element={<PrivateRoute component={Views.DataExplorer.FileIndex} />} />
         <Route path='/runs'>
-          <Route index element={<PrivateRoute component={Views.DataExplorer.Runs} />}/>
-          <Route path=':runNumber' element={<PrivateRoute component={Views.DataExplorer.Run} />}/>
+          <Route index element={<PrivateRoute component={Views.DataExplorer.Runs} />} />
+          <Route path=':runNumber' element={<PrivateRoute component={Views.DataExplorer.Run} />} />
         </Route>
         <Route path='/lumisections'>
-          <Route index element={<PrivateRoute component={Views.DataExplorer.Lumisections} />}/>
-          <Route path=':id' element={<PrivateRoute component={Views.DataExplorer.Lumisection} />}/>
+          <Route index element={<PrivateRoute component={Views.DataExplorer.Lumisections} />} />
+          <Route path=':id' element={<PrivateRoute component={Views.DataExplorer.Lumisection} />} />
         </Route>
         <Route path='/histograms-1d'>
-          <Route index element={<PrivateRoute component={Views.DataExplorer.Histograms1D} />}/>
-          <Route path=':id' element={<PrivateRoute component={Views.DataExplorer.Histogram} dim={1} />}/>
+          <Route index element={<PrivateRoute component={Views.DataExplorer.Histograms1D} />} />
+          <Route path=':id' element={<PrivateRoute component={Views.DataExplorer.Histogram} dim={1} />} />
         </Route>
         <Route path='/histograms-2d'>
-          <Route index element={<PrivateRoute component={Views.DataExplorer.Histograms2D} />}/>
-          <Route path=':id' element={<PrivateRoute component={Views.DataExplorer.Histogram} dim={2} />}/>
+          <Route index element={<PrivateRoute component={Views.DataExplorer.Histograms2D} />} />
+          <Route path=':id' element={<PrivateRoute component={Views.DataExplorer.Histogram} dim={2} />} />
         </Route>
         <Route path='/create' element={<PrivateRoute component={Views.MachineLearning.CreatePipelines} />} />
         <Route path='/train' element={<PrivateRoute component={Views.MachineLearning.RunPipelines} />} />

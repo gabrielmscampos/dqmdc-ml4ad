@@ -2,9 +2,8 @@ import { User } from 'oidc-client-ts'
 
 import { OIDC_PUBLIC_TOKEN_NS, OIDC_CONFIDENTIAL_TOKEN_NS } from '../config/env'
 
-export const getUserToken = ({ type }) => {
-  const item = type === 'confidential' ? OIDC_CONFIDENTIAL_TOKEN_NS : OIDC_PUBLIC_TOKEN_NS
-  const oidcStorage = localStorage.getItem(item)
+export const getPublicToken = () => {
+  const oidcStorage = localStorage.getItem(OIDC_PUBLIC_TOKEN_NS)
   if (!oidcStorage) {
     throw new Error('User is not authenticated!')
   }
@@ -12,5 +11,18 @@ export const getUserToken = ({ type }) => {
   return {
     tokenType: user.token_type,
     accessToken: user.access_token
+  }
+}
+
+export const getConfidentialToken = () => {
+  const oidcStorage = localStorage.getItem(OIDC_CONFIDENTIAL_TOKEN_NS)
+  if (!oidcStorage) {
+    throw new Error('User is not authenticated!')
+  }
+  const user = JSON.parse(oidcStorage)
+  return {
+    tokenType: user.token_type,
+    accessToken: user.access_token,
+    expiresIn: user.expires_in
   }
 }
