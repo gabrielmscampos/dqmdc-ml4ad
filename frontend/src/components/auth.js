@@ -1,24 +1,16 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 
 import { useAuth } from 'react-oidc-context'
-import { useNavigate } from 'react-router-dom'
 import Modal from 'react-bootstrap/Modal'
+import Button from 'react-bootstrap/Button'
 
 const PrivateRoute = ({ roles, component: Component, ...props }) => {
   // Methods hasRealmRole and hasResourceRole inspired from keycloak-js
   // Src code: https://github.com/keycloak/keycloak/blob/main/js/libs/keycloak-js/src/keycloak.js
 
-  const REDIRECT_TIMEOUT = 5000 // ms
-  const navigate = useNavigate()
   const auth = useAuth()
   const kc = auth.user?.profile
   const clientId = auth.settings.client_id
-
-  useEffect(() => {
-    if (!isAuthorized(roles)) {
-      setTimeout(() => navigate('/'), REDIRECT_TIMEOUT)
-    }
-  }, [roles])
 
   const hasRealmRole = (role) => {
     const access = kc.cern_roles
@@ -55,9 +47,9 @@ const PrivateRoute = ({ roles, component: Component, ...props }) => {
         <Modal.Header>
           <Modal.Title>Permission denied</Modal.Title>
         </Modal.Header>
-        <Modal.Body>{auth.isAuthenticated ? 'It seems you doesn\'t have the necessary role for accessing this resource, ask the administrator!' : 'You are not authenticated!'}</Modal.Body>
+        <Modal.Body>{auth.isAuthenticated ? 'It seems you don\'t have the required role to access this resource, please ask your administrator.' : 'You are not authenticated.'}</Modal.Body>
         <Modal.Footer>
-          {`Redirecting to home in ${REDIRECT_TIMEOUT / 1000} seconds...`}
+          <Button type='submit' onClick={() => { window.location.href = '/' } }>Go back to Home</Button>
         </Modal.Footer>
       </Modal>
         )
