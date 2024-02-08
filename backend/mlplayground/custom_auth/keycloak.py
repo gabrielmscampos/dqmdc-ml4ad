@@ -7,7 +7,7 @@ from utils.keycloak import Keycloak
 kc = Keycloak(
     server_url=settings.KEYCLOAK_SERVER_URL,
     client_id=settings.KEYCLOAK_CONFIDENTIAL_CLIENT_ID,
-    client_secret_key=settings.KEYCLOAK_SECRET_KEY,
+    client_secret_key=settings.KEYCLOAK_CONFIDENTIAL_SECRET_KEY,
     realm_name=settings.KEYCLOAK_REALM,
 )
 
@@ -46,7 +46,9 @@ class KeycloakAuthentication(BaseAuthentication):
             # 1. user tokens from confidential client (pure or exchanged from public client)
             # 2. api access token
             # We can't always retrieve the user_info (only when dealing with user tokens)
-            if claims["sub"] == f"service-account-{settings.KEYCLOAK_CONFIDENTIAL_CLIENT_ID}":
+
+            api_tokens_subs = [f"service-account-{cid}" for cid in settings.KEYCLOAK_API_CLIENTS.values()]
+            if claims["sub"] in api_tokens_subs:
                 user_info = {"name": claims["sub"], "reason": "api access token"}
             else:
                 user_info = kc.user_info(token)
@@ -88,11 +90,19 @@ class KeycloakApiTokenAuthentication(BaseAuthentication):
     def authenticate(self, request):
         api_key = self.__get_api_key(request)
 
-        if api_key != settings.KEYCLOAK_SECRET_KEY:
+        if api_key not in settings.KEYCLOAK_API_CLIENTS.keys():
             raise AuthenticationFailed()
 
+        api_kc = Keycloak(
+            skip_pk=True,
+            server_url=settings.KEYCLOAK_SERVER_URL,
+            client_id=settings.KEYCLOAK_API_CLIENTS[api_key],
+            client_secret_key=api_key,
+            realm_name=settings.KEYCLOAK_REALM,
+        )
+
         try:
-            token = kc.issue_api_token()
+            token = api_kc.issue_api_token()
         except Exception:
             raise AuthenticationFailed()
 

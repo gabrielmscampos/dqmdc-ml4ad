@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+import json
 import os
 from pathlib import Path
 
@@ -203,7 +204,8 @@ DIR_PATH_DQMIO_STORAGE = os.getenv("DIR_PATH_DQMIO_STORAGE")
 
 # Keycloak OIDC config
 KEYCLOAK_SERVER_URL = os.getenv("KEYCLOAK_SERVER_URL")
-KEYCLOAK_CONFIDENTIAL_CLIENT_ID = os.getenv("KEYCLOAK_CONFIDENTIAL_CLIENT_ID")
-KEYCLOAK_SECRET_KEY = os.getenv("KEYCLOAK_SECRET_KEY")
 KEYCLOAK_REALM = os.getenv("KEYCLOAK_REALM")
+KEYCLOAK_CONFIDENTIAL_CLIENT_ID = os.getenv("KEYCLOAK_CONFIDENTIAL_CLIENT_ID")
+KEYCLOAK_CONFIDENTIAL_SECRET_KEY = os.getenv("KEYCLOAK_CONFIDENTIAL_SECRET_KEY")
 KEYCLOAK_PUBLIC_CLIENT_ID = os.getenv("KEYCLOAK_PUBLIC_CLIENT_ID")
+KEYCLOAK_API_CLIENTS = json.loads(os.getenv("KEYCLOAK_API_CLIENTS", "{}"))

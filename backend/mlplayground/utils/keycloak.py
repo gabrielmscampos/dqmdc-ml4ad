@@ -7,14 +7,21 @@ class InvalidToken(Exception):
     pass
 
 
+class InvalidClient(Exception):
+    pass
+
+
 class Keycloak:
-    def __init__(self, **kwargs):
+    def __init__(self, skip_pk=True, **kwargs):
         self.server_url = kwargs["server_url"]
         self.realm_name = kwargs["realm_name"]
         self.client_id = kwargs["client_id"]
         self.client_secret_key = kwargs.get("client_secret_key")
         self._kc = KeycloakOpenID(**kwargs)
-        self.public_key = self.__build_public_key()
+        self.skip_pk = skip_pk
+
+        if self.skip_pk is True:
+            self.public_key = self.__build_public_key()
 
     def __build_public_key(self):
         return "-----BEGIN PUBLIC KEY-----\n" + self._kc.public_key() + "\n-----END PUBLIC KEY-----"
@@ -30,6 +37,8 @@ class Keycloak:
             raise InvalidToken
 
     def decode_token(self, token):
+        if self.skip_pk is True:
+            raise InvalidClient
         options = {"verify_signature": True, "verify_aud": True, "verify_exp": True}
         return self._kc.decode_token(token, key=self.public_key, options=options)
 
