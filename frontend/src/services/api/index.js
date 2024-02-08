@@ -1,8 +1,8 @@
 import axios from 'axios'
-import { User } from 'oidc-client-ts'
 
 import { toUndefined } from '../../utils/sanitizer'
-import { API_URL, OIDC_AUTHORITY, OIDC_PUBLIC_CLIENT_ID } from '../../config/env'
+import { getUserToken } from '../../utils/userTokens'
+import { API_URL } from '../../config/env'
 
 const FILE_INDEX_STATUSES = [
   'INDEXED',
@@ -16,14 +16,9 @@ const axiosApiInstance = axios.create()
 
 axiosApiInstance.interceptors.request.use(
   async config => {
-    const oidcStorage = localStorage.getItem(`oidc.user.confidential:${OIDC_AUTHORITY}:${OIDC_PUBLIC_CLIENT_ID}`)
-    if (!oidcStorage) {
-      return null
-    }
-    const user = User.fromStorageString(oidcStorage)
-
+    const oidc = getUserToken({ type: 'confidential' })
     config.headers = {
-      Authorization: `${user.token_type} ${user.access_token}`,
+      Authorization: `${oidc.tokenType} ${oidc.accessToken}`,
       Accept: 'application/json'
     }
     return config
@@ -33,10 +28,18 @@ axiosApiInstance.interceptors.request.use(
   })
 
 const exchangeToken = async ({ subjectToken }) => {
+  const oidc = getUserToken({ type: 'public' })
   const endpoint = `${API_URL}/exchange-token/`
-  const response = await axiosApiInstance.post(endpoint, {
+  const response = await axios.post(endpoint, {
     subject_token: subjectToken
-  })
+  },
+  {
+    headers: {
+      Authorization: `${oidc.tokenType} ${oidc.accessToken}`,
+      Accept: 'application/json'
+    }
+  }
+  )
   return response.data
 }
 
