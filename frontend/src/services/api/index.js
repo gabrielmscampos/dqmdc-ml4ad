@@ -2,7 +2,7 @@ import axios from 'axios'
 import { User } from 'oidc-client-ts'
 
 import { toUndefined } from '../../utils/sanitizer'
-import { API_URL, OIDC_AUTHORITY, OIDC_CLIENT_ID } from '../../config/env'
+import { API_URL, OIDC_AUTHORITY, OIDC_PUBLIC_CLIENT_ID } from '../../config/env'
 
 const FILE_INDEX_STATUSES = [
   'INDEXED',
@@ -16,7 +16,7 @@ const axiosApiInstance = axios.create()
 
 axiosApiInstance.interceptors.request.use(
   async config => {
-    const oidcStorage = localStorage.getItem(`oidc.user.api:${OIDC_AUTHORITY}:${OIDC_CLIENT_ID}`)
+    const oidcStorage = localStorage.getItem(`oidc.user.confidential:${OIDC_AUTHORITY}:${OIDC_PUBLIC_CLIENT_ID}`)
     if (!oidcStorage) {
       return null
     }
