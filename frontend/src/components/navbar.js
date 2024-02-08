@@ -21,7 +21,7 @@ const Navbar = () => {
     auth.removeUser()
     localStorage.removeItem(OIDC_CONFIDENTIAL_TOKEN_NS)
     setShowLogoutModal(false)
-    window.location.reload() // This is done just to enhance UX, you could just logout using "auth.removeUser()"
+    window.location.href = '/' // This is done just to enhance UX, you could just logout using "auth.removeUser()"
   }
 
   return (
